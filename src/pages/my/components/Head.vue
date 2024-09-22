@@ -20,8 +20,10 @@
 		</view>
 		<!-- 右边部分 -->
 		<view class="edit-btn-container">
-			<view class="edit-btn">编辑资料</view>
-			<wd-icon name="arrow-right" color="rgb(148, 148, 148)" size="18px"></wd-icon>
+			<navigator url="/pages/personalSettings/personalSettings" hover-class="none">
+				<view class="edit-btn">编辑资料</view>
+				<wd-icon name="arrow-right" color="rgb(148, 148, 148)" size="18px"></wd-icon>
+			</navigator>
 		</view>
 	</view>
 	<!-- 新增的容器，用于放置帖子、点赞等 -->
@@ -74,13 +76,15 @@
 		}
 		// 右边部分
 		.edit-btn-container {
-			display: flex;
-			align-items: center;
-			padding-right: 10rpx;
 			.edit-btn {
 				color: rgb(148, 148, 148);
 				padding: 20rpx;
 				padding-right: 0;
+			}
+			navigator{
+				display: flex;
+				align-items: center;
+				padding-right: 10rpx;
 			}
 		}
 	}
@@ -97,6 +101,7 @@
 			margin: 25rpx;
 			padding: 20rpx;
 			font-size: 0.8rem;
+			border-radius: 20rpx; 
 		}
 	}
 </style>

@@ -1,0 +1,19 @@
+{
+    "project": "test-pack",
+    "platform":"android",
+    "iscustom": false,
+    "safemode": false,
+    "android": {
+      "packagename":"com.test.android",
+      "androidpacktype":"1",
+      "certalias":"",
+      "certfile":"",
+      "certpassword":"",
+      "channels":""
+      },
+    "isconfusion":false,
+    "splashads":false,
+    "rpads":false,
+    "pushads":false,
+    "exchange":false
+}

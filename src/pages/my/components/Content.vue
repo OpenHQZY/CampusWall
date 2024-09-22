@@ -9,16 +9,18 @@
 
 <template>
 	<!-- 校园认证模块 -->
-	<view class="features-container">
-		<view class="feature-item">
-			<image src="@/static/my/authentication.png"></image>
-			<text>校园认证</text>
+	<navigator url="/pages/authentication/authentication" hover-class="none">
+		<view class="features-container">
+			<view class="feature-item">
+				<image src="@/static/my/authentication.png"></image>
+				<text>校园认证</text>
+			</view>
+			<view class="unverified">
+				<text>未认证</text>
+				<wd-icon name="arrow-right" color="rgb(185, 185, 185)" size="18px"></wd-icon>
+			</view>
 		</view>
-		<view class="unverified">
-			<text>未认证</text>
-			<wd-icon name="arrow-right" color="rgb(185, 185, 185)" size="18px"></wd-icon>
-		</view>
-	</view>
+	</navigator>
 	<!-- 分享与联系模块 -->
 	<view class="share-contact-container">
 		<view class="feature-item-container" v-for="(item, index) in shareContactModule" :key="index">

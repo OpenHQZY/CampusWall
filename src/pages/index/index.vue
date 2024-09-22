@@ -1,30 +1,16 @@
 <script setup>
-	import { ref } from 'vue';
-	import Head from './components/Head.vue';
-	import Option from './components/Option.vue';
-	import Content from './components/Content.vue';
-</script>
+import { useCounterStore } from '@/stores/counter'
+const counter = useCounterStore()
 
+</script>
 <template>
-	<view class="container">
-		<Head class="header"></Head>
-		<Option></Option>
-		<Content></Content>
-	</view>
+  <view>
+	  <text>{{counter.name_test}}</text>
+  </view>
+  我靠
 </template>
 
-<style lang="scss">
-	.container {
-		height: 100vh;
-		width: 100vw;
-		display: flex;
-		flex-direction: column;
-		background-color: rgb(243, 243, 243);
-	}
-	.header {
-	  position: sticky;
-	  top: 0;
-	  z-index: 10;
-	  background-color: white;
-	}
+
+<style>
+
 </style>
