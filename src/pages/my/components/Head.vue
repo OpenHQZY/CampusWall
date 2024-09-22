@@ -14,8 +14,8 @@
 			<!-- 头像 -->
 			<image class="avatar" src="@/static/my/profilePicture.jpg"></image>
 			<view class="name-user-container" @tap="">
-				<view class="name">张三asdfkhksadfh</view>
-				<text class="user-id">用户ID:12995</text>
+				<view class="name">用户名</view>
+				<text class="user-id">用户ID:20225222123</text>
 			</view>
 		</view>
 		<!-- 右边部分 -->
