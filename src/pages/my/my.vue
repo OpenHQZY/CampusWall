@@ -5,7 +5,7 @@
 </script>
 
 <template>
-	<view class="container">
+	<view class="container" >
 		<!-- 头部 -->
 		<Head></Head>
 		<!-- 内容 -->
@@ -17,6 +17,6 @@
 <style lang="scss">
 	.container {
 		height: 100vh;
-		background-color: rgb(246, 246, 246);
+		background-color: rgb(242, 246, 249);
 	}
 </style>
