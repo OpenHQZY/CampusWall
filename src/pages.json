@@ -1,92 +1,139 @@
 {
-	"easycom": {
-		"autoscan": true,
-		"custom": {
-			"^wd-(.*)": "wot-design-uni/components/wd-$1/wd-$1.vue"
-		}
-	},
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
-		{
-			"path": "pages/my/my",
-			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTitleText": "我的"
-			}
-		},
-		{
-			"path": "pages/index/index",
-			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTitleText": "首页"
-			}
-		},
-		{
-			"path": "pages/find/find",
-			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTitleText": "发现"
-			}
-		},
-		{
-			"path": "pages/message/message",
-			"style": {
-				"navigationStyle": "custom",
-				"navigationBarTitleText": "消息"
-			}
-		},
-		{
-			"path" : "pages/personalSettings/personalSettings",
-			"style" : 
-			{
-				"navigationBarTitleText" : "个人资料设置",
-				"navigationBarBackgroundColor": "#FFFFFF", // 导航栏背景色为白色
-				"navigationBarTextStyle": "black" // 导航栏文本颜色为黑色
-			}
-		},
-		{
-			"path" : "pages/authentication/authentication",
-			"style" : 
-			{
-				"navigationBarTitleText" : "校园认证",
-				"navigationBarBackgroundColor": "#FFFFFF", // 导航栏背景色为白色
-				"navigationBarTextStyle": "black" // 导航栏文本颜色为黑色
-			}
-		}
-	],
-	"globalStyle": {
-		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
-	},
-	"tabBar": {
-		"color": "#BEBEBE",
-		"selectedColor": "#7FC7EE", // 选中时的文本颜色
-		"list": [{
-				"pagePath": "pages/index/index",
-				"text": "校园",
-				"iconPath": "static/my/campus.png",
-				"selectedIconPath": "static/my/campusHighlight.png"
-			},
-			{
-				"pagePath": "pages/find/find",
-				"text": "发现",
-				"iconPath": "static/my/find.png",
-				"selectedIconPath": "static/my/findHighlight.png"
-			},
-			{
-				"pagePath": "pages/message/message",
-				"text": "消息",
-				"iconPath": "static/my/message.png",
-				"selectedIconPath": "static/my/messageHighlight.png"
-
-			},
-			{
-				"pagePath": "pages/my/my",
-				"text": "我的",
-				"iconPath": "static/my/my.png",
-				"selectedIconPath": "static/my/myHighlight.png"
-			}
-		]
-	}
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^wd-(.*)": "wot-design-uni/components/wd-$1/wd-$1.vue"
+    }
+  },
+  "pages": [
+    //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "首页"
+      }
+    },
+    {
+      "path": "pages/find/find",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "发现"
+      }
+    },
+    {
+      "path": "pages/message/message",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "消息"
+      }
+    },
+    {
+      "path": "pages/card/card",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "发帖"
+      }
+    },
+    {
+      "path": "pages/detail/detail",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "详情"
+      }
+    },
+    {
+      "path": "pages/my/my",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/notice/notice",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTitleText": "公告"
+      }
+    },
+    {
+      "path": "pages/webview/webview",
+      "style": {
+        "navigationBarTitleText": ""
+      }
+    },
+    {
+      "path": "pages/personalSettings/personalSettings",
+      "style": {
+        "navigationBarTitleText": "个人资料设置",
+        "navigationBarBackgroundColor": "#FFFFFF",
+        // 导航栏背景色为白色
+        "navigationBarTextStyle": "black"
+        // 导航栏文本颜色为黑色
+      }
+    },
+    {
+      "path": "pages/authentication/authentication",
+      "style": {
+        "navigationBarTitleText": "校园认证",
+        "navigationBarBackgroundColor": "#FFFFFF",
+        // 导航栏背景色为白色
+        "navigationBarTextStyle": "black"
+        // 导航栏文本颜色为黑色
+      }
+    },
+    {
+      "path": "pages/communityNorms/communityNorms",
+      "style": {
+        "navigationBarTitleText": "社区规范&小黑屋",
+        "navigationBarBackgroundColor": "#31363D",
+        // 导航栏背景色为白色
+        "navigationBarTextStyle": "white"
+        // 导航栏文本颜色为黑色
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uni-app",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#BEBEBE",
+    "selectedColor": "#7FC7EE",
+    // 选中时的文本颜色
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "校园",
+        "iconPath": "static/my/campus.png",
+        "selectedIconPath": "static/my/campusHighlight.png"
+      },
+      {
+        "pagePath": "pages/find/find",
+        "text": "发现",
+        "iconPath": "static/my/find.png",
+        "selectedIconPath": "static/my/findHighlight.png"
+      },
+      {
+        "pagePath": "pages/card/card",
+        "text": "发帖",
+        "iconPath": "static/my/card.png",
+        "selectedIconPath": "static/my/cardHighlight.png"
+      },
+      {
+        "pagePath": "pages/message/message",
+        "text": "消息",
+        "iconPath": "static/my/message.png",
+        "selectedIconPath": "static/my/messageHighlight.png"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "text": "我的",
+        "iconPath": "static/my/my.png",
+        "selectedIconPath": "static/my/myHighlight.png"
+      }
+    ]
+  }
 }
