@@ -5,12 +5,12 @@ import Option from './components/Option.vue';
 import Swiper from './components/Swiper.vue';
 import Notice from './components/Notice.vue';
 import Content from './components/Content.vue';
-
+import {useCounterStore} from '@/stores/counter'
+const counter = useCounterStore()
 wx.showShareMenu({
   withShareTicket: true,
   menus: ["shareAppMessage", "shareTimeline"]
 })
-
 </script>
 
 

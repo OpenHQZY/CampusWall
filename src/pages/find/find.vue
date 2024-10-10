@@ -1,8 +1,16 @@
 <script setup>
-import {ref} from 'vue'
+import {ref, watch} from 'vue'
 import {useCounterStore} from '@/stores/counter'
 import {useToast} from 'wot-design-uni';
+import {add_postLikeStatistics, del_postLikeStatistics} from "@/api/index.js";
+import {post_getPostHeatRank, post_page} from "@/api/find.js";
+import {post_getPost_postId_userId, postComment_getPostComment} from '@/api/detail.js';
+import {onReachBottom} from "@dcloudio/uni-app";
 
+const toast = useToast()
+const {safeAreaInsets} = uni.getSystemInfoSync();
+const counter = useCounterStore()
+let pages = ref(1);
 const preview_img = (img_list) => {
   uni.previewImage({
     urls: (img_list),
@@ -16,47 +24,112 @@ const preview_img = (img_list) => {
     }
   })
 }
-
-const send_detail_data = (detail_id) => {
-  // 用户在主页点击帖子，通过帖子detail_id来后端查询该帖子具体数据，并赋值给counter.index_detail_data
-  console.log(detail_id)
-  // counter.index_detail_data =
+const get_find_hot_data = () => {
+  post_getPostHeatRank()
+      .then(res => {
+        if (res.code !== 1) {
+          toast.warning(res.msg)
+        } else {
+          counter.find_hot_data = res.data
+        }
+      })
+      .catch(error => {
+        // 处理登录失败的情况
+        toast.error('服务器异常')
+      });
 }
-
-const handleNavigatorClick = (detail_id) => {
-  send_detail_data(detail_id)
+const temp_find_search_data = uni.getStorageSync('find_search_data')
+if (temp_find_search_data) {
+  counter.find_search_data = JSON.parse(temp_find_search_data)
+}
+get_find_hot_data()
+// -------------------根据帖子id跳转到详情页-------------------
+const send_detail_data = (postId) => {
+  post_getPost_postId_userId(postId, counter.get_user_id())
+      .then(res => {
+        if (res.code !== 1) {
+          toast.warning(res.msg)
+        } else {
+          counter.detail_card_data = res.data
+        }
+      })
+      .catch(error => {
+        // 处理登录失败的情况
+        toast.error('服务器异常')
+      });
+}
+const send_detail_comment_data = (postId, type) => {
+  postComment_getPostComment(postId, counter.get_user_id(), type)
+      .then(res => {
+        if (res.code !== 1) {
+          toast.warning(res.msg)
+        } else {
+          counter.detail_comment_data = res.data
+        }
+      })
+      .catch(error => {
+        // 处理登录失败的情况
+        toast.error('服务器异常')
+      });
+}
+const handleNavigatorClick = (postId) => {
+  send_detail_data(postId)
+  send_detail_comment_data(postId, 2)
 
   uni.navigateTo({
     url: '/pages/detail/detail'
   });
 }
-const submit_star = (event) => {
+// -------------------根据帖子id跳转到详情页-------------------
+const submit_star = (event, postId, status_num) => {
   event.stopPropagation(); // 阻止事件冒泡
-  counter.detail_star = !counter.detail_star;
+  if (status_num === 1) {
+    for (let i = 0; i < counter.find_search_index_data.length; i++) {
+      if (counter.find_search_index_data[i].postId === postId) {
+        counter.find_search_index_data[i].likes += 1
+        counter.find_search_index_data[i].liked = true
+        add_postLikeStatistics(postId).then(res => {
+          if (res.code !== 1) {
+            toast.warning(res.msg)
+          } else {
+          }
+        }).catch(error => {
+          toast.error("服务器异常")
+        })
+      }
+    }
+  } else {
+    for (let i = 0; i < counter.find_search_index_data.length; i++) {
+      if (counter.find_search_index_data[i].postId === postId) {
+        counter.find_search_index_data[i].likes -= 1
+        counter.find_search_index_data[i].liked = false
+        del_postLikeStatistics(postId).then(res => {
+          if (res.code !== 1) {
+            toast.warning(res.msg)
+          } else {
+          }
+        }).catch(error => {
+          toast.error("服务器异常")
+        })
+      }
+    }
+  }
+
 }
 
-const toast = useToast()
-const {safeAreaInsets} = uni.getSystemInfoSync();
-const counter = useCounterStore()
-const delete_search_data = (index) => {
-  counter.find_search_data = counter.find_search_data.filter(data => data[0] !== index);
+const delete_search_data = (find_search_id) => {
+  counter.find_search_data = counter.find_search_data.filter(data => data.find_search_id !== find_search_id);
+  uni.setStorageSync('find_search_data', JSON.stringify(counter.find_search_data));
 }
-const click_search_data = (inp) => {
-  counter.find_search_inp = inp;
-  counter.find_search_index_data = counter.index_tab_data.filter(data => data[5].includes(counter.find_search_inp))
+const click_search_data = (find_search_content) => {
+  counter.find_search_inp = find_search_content;
   counter.find_search_status = true
+  pages.value = 1
+  post_page_default(true)
 }
 const all_delete_search_data = (index) => {
   counter.find_search_data = [];
-}
-const add_search_data = () => {
-  if (counter.find_search_inp.length > 0) {
-    counter.find_search_data.push([counter.uuid(), counter.find_search_inp])
-    counter.find_search_index_data = counter.index_tab_data.filter(data => data[5].includes(counter.find_search_inp))
-    counter.find_search_status = true
-  } else {
-    toast.show("搜索内容为空")
-  }
+  uni.setStorageSync('find_search_data', JSON.stringify(counter.find_search_data));
 }
 const clear_search_data = () => {
   if (counter.find_search_inp.length === 0) {
@@ -64,6 +137,49 @@ const clear_search_data = () => {
     counter.find_search_status = false
   }
 }
+const add_search_data = () => {
+  if (counter.find_search_inp.length > 0) {
+    counter.find_search_status = true
+    pages.value = 1
+    counter.find_search_data.push({find_search_id: counter.uuid(), find_search_content: counter.find_search_inp})
+    uni.setStorageSync('find_search_data', JSON.stringify(counter.find_search_data));
+    post_page_default(true)
+  } else {
+    toast.show("搜索内容为空")
+  }
+}
+
+const post_page_default = (status) => {
+  post_page(`${pages.value}`, `${counter.find__glide_total_num}`, counter.find_search_inp, counter.get_user_id()).then(res => {
+    counter.find_glide_loading = false;
+    if (res.code !== 1) {
+      toast.warning(res.msg)
+    } else {
+      if (status) {
+        counter.find_search_index_data = []
+        counter.find_search_index_data = res.data.records
+      } else {
+        for (let i = 0; i < res.data.records.length; i++) {
+          counter.find_search_index_data.push(res.data.records[i])
+        }
+      }
+      if (pages.value * counter.find__glide_total_num > res.data.total) {
+        counter.find_glide_loading_desc = "已加载到最底部"
+      } else {
+        counter.find_glide_loading_desc = "努力加载中..."
+      }
+    }
+  }).catch(error => {
+    counter.find_glide_loading = false;
+    toast.error("服务器异常")
+  })
+}
+onReachBottom(() => {
+  counter.find_glide_loading = true;
+  pages.value += 1
+  post_page_default(false)
+})
+
 </script>
 
 <template>
@@ -74,14 +190,13 @@ const clear_search_data = () => {
              placeholder="搜索帖子和文章"
              placeholder-left
              cancel-txt="搜索"
-             @cancel="add_search_data"
              @blur="add_search_data"
              @clear="clear_search_data"
              @change="clear_search_data"
              maxlength="300"/>
   <view class="view1-flex">
     <view class="view1">
-      <text class="view1-1">搜索历史</text>
+      <text class="view1-1" style="font-weight: bold">搜索历史</text>
       <view class="view1-2" @click="all_delete_search_data">
         <wd-icon name="delete-thin" size="17px"></wd-icon>
         <view style="margin-left: 5rpx">清空</view>
@@ -89,10 +204,13 @@ const clear_search_data = () => {
     </view>
   </view>
   <view class="view2">
-    <view v-for="(data) in counter.find_search_data" :key="data[0]">
+    <view v-for="(data) in counter.find_search_data" :key="data.find_search_id">
       <view class="view2-1">
-        <text style="font-size: 30rpx" @click="click_search_data(data[1])">{{ data[1] }}</text>
-        <view style="margin-left: 5rpx" @click="delete_search_data(data[0])">
+        <text style="font-size: 30rpx" @click="click_search_data(data.find_search_content)">{{
+            data.find_search_content
+          }}
+        </text>
+        <view style="margin-left: 5rpx" @click="delete_search_data(data.find_search_id)">
           <wd-icon name="close" size="15px" color="#999999"></wd-icon>
         </view>
       </view>
@@ -107,43 +225,49 @@ const clear_search_data = () => {
       <view class="view3-1-txt2">大家都在看</view>
     </view>
   </view>
+
   <view class="view4-flex" v-if="!counter.find_search_status">
-    <view v-for="(data) in counter.find_hot_data" :key="data[0]">
-      <view class="view4" @click.stop="handleNavigatorClick(data[0])">
-        <view class="view4-1">{{ data[0] }}</view>
-        <view class="view4-2">{{ data[1] }}</view>
-        <view class="view4-3">{{ data[2] }}&nbsp;热度</view>
+    <view v-for="(data, index) in counter.find_hot_data" :key="index">
+      <view class="view4" @click.stop="handleNavigatorClick(data.postId)">
+        <view class="view4-1">{{ index + 1 }}</view>
+        <view class="view4-2">{{ data.postContent }}</view>
+        <view class="view4-3">{{ data.postHeat }}&nbsp;热度</view>
       </view>
     </view>
   </view>
 
-
-  <view class="div-search_show">
+  <view style="width: 100vw;height: 1100rpx; background: rgb(243, 243, 243);" v-if="counter.find_search_status">
     <view class="div-content-flex">
-      <view class="div-content" v-for="(data) in counter.find_search_index_data" :key="data[0]"
-            @click.stop="handleNavigatorClick(data[0])">
+      <view class="div-content" v-for="(data) in counter.find_search_index_data" :key="data.postId"
+            @click.stop="handleNavigatorClick(data.postId)">
 
         <view class="div1">
-          <view @click.stop="preview_img([data[1]])">
+          <view @click.stop="preview_img([data.userProfilePicture])">
             <image
                 class="div1-wd-img"
-                :src="data[1]"
+                :src="data.userProfilePicture"
             />
           </view>
           <view class="div1-1">
-            <text class="div1-txt1">{{ data[2] }}</text>
             <view class="div1-1-1">
-              <text class="div1-txt2">{{ data[3] }}</text>
-              <text class="div1-txt3">{{ data[4] }}次围观</text>
+              <text class="div1-txt1">{{ data.userName }}</text>
+              <image class="div1-txt1-auth"
+                     src="/static/index/auth.png"
+                     v-if="data.authenticated"
+              ></image>
+            </view>
+            <view class="div1-1-1">
+              <text class="div1-txt2">{{ data.postTime }}</text>
+              <text class="div1-txt3">{{ data.postViewCount }}次围观</text>
             </view>
           </view>
         </view>
 
         <view class="div2">
-          <text class="div2-txt">{{ data[5] }}</text>
+          <text class="div2-txt">{{ data.postContent }}</text>
           <view class="div2-img-flex">
-            <view class="div2-img" v-for="(img_data, img_index) in data[7]" :key="img_index"
-                  @click.stop="preview_img(data[7])">
+            <view class="div2-img" v-for="(img_data, img_index) in data.postPicturesArray" :key="img_index"
+                  @click.stop="preview_img(data.postPicturesArray)">
               <image
                   class="div2-wd-img"
                   :src="img_data"
@@ -154,33 +278,53 @@ const clear_search_data = () => {
 
         <view class="div3">
           <view class="div3-1">
-            <text># {{ data[8] }}</text>
+            <text># {{ data.postClassificationName }}</text>
           </view>
           <view class="div3-2">
             <view class="div3-2-flex">
               <wd-icon name="chat1" size="2.2vh"></wd-icon>
-              <text style="margin-right: 20rpx">{{ data[9] }}</text>
+              <text style="margin-right: 20rpx">{{ data.comments }}</text>
             </view>
-            <view class="div3-2-flex" v-if="!counter.detail_star" @click.stop="submit_star($event)">
+            <view class="div3-2-flex" v-if="!data.liked" @click.stop="submit_star($event, data.postId, 1)">
               <wd-icon name="thumb-up" size="2.2vh"></wd-icon>
-              <text>{{ data[10] }}</text>
+              <text>{{ data.likes }}</text>
             </view>
-            <view class="div3-2-flex" v-if="counter.detail_star" @click.stop="submit_star($event)">
+            <view class="div3-2-flex" v-if="data.liked" @click.stop="submit_star($event, data.postId, 0)">
               <wd-icon name="thumb-up" size="2.2vh" color="#5fc8e8"></wd-icon>
-              <text style="color: #5fc8e8">{{ data[10] }}</text>
+              <text style="color: #5fc8e8">{{ data.likes }}</text>
             </view>
           </view>
         </view>
       </view>
     </view>
+
+    <view class="div4" v-if="counter.find_glide_loading">
+      <wd-loading :size="17"/>
+      <view>&nbsp;{{ counter.find_glide_loading_desc }}</view>
+    </view>
+
+    <view v-if="counter.find_search_index_data.length===0 && counter.find_search_status" class="div4">
+      搜索结果为空
+    </view>
+
   </view>
-  <view v-if="counter.find_search_index_data.length===0 && counter.find_search_status" class="div4">
-    搜索结果为空
-  </view>
+
   <wd-toast/>
 </template>
 
 <style scoped lang="scss">
+
+
+.div4 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100rpx;
+  margin-top: 10rpx;
+  margin-bottom: 10rpx;
+}
 
 .view4-flex {
   width: 100vw;
@@ -319,141 +463,151 @@ const clear_search_data = () => {
   font-size: 35rpx;
   font-weight: bold;
   height: 85rpx;
+  position: sticky; /* Makes the header sticky */
+  top: 0; /* Positions it at the top of the viewport */
+  z-index: 1000; /* Ensures it stays above other content */
+  background-color: white; /* Optional: Set a background color */
 }
 
 
-.div-search_show {
+.div-content-flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background-color: rgb(238, 238, 238);
 
-  .div-content-flex {
+  .div-content {
+    display: flex;
+    background-color: white;
+    margin-bottom: 10rpx;
+    width: 680rpx;
+    border-radius: 20rpx;
+    padding: 15rpx;
+    flex-direction: column;
+
+  }
+}
+
+.div2 {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10rpx;
+  position: relative;
+  margin-left: 80rpx;
+  width: 550rpx;
+
+  .div2-txt {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 10; /* 设置最大显示行数 */
+    overflow: hidden;
+    font-size: 30rpx;
+  }
+
+
+  .div2-img-flex {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 20rpx;
+    max-height: 540rpx;
+    overflow: hidden;
+
+
+    .div2-wd-img {
+      width: 175rpx;
+      height: 175rpx;
+      border-radius: 5rpx;
+    }
+  }
+}
+
+.div3 {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  justify-content: space-between;
+  margin-top: 20rpx;
+  position: relative;
+  margin-left: 70rpx;
+
+  .div3-1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
-    background-color: rgb(238, 238, 238);
-
-    .div-content {
-      display: flex;
-      background-color: white;
-      margin-top: 10rpx;
-      margin-bottom: 10rpx;
-      width: 680rpx;
-      border-radius: 20rpx;
-      padding: 15rpx;
-      flex-direction: column;
-
-    }
+    width: 150rpx;
+    height: 50rpx;
+    border-radius: 10rpx;
+    background-color: rgb(243, 243, 243);
+    color: #999999;
+    font-size: 25rpx;
   }
 
-  .div2 {
-    display: flex;
-    flex-direction: column;
-    margin-top: 10rpx;
+  .div3-2 {
+    margin-left: auto;
     position: relative;
-    margin-left: 80rpx;
-    width: 550rpx;
-
-    .div2-txt {
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 10; /* 设置最大显示行数 */
-      overflow: hidden;
-      font-size: 30rpx;
-    }
-
-
-    .div2-img-flex {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      margin-top: 20rpx;
-      max-height: 540rpx;
-      overflow: hidden;
-
-
-      .div2-wd-img {
-        width: 175rpx;
-        height: 175rpx;
-        border-radius: 5rpx;
-      }
-    }
-  }
-
-  .div3 {
+    left: -20rpx;
+    color: #999999;
+    font-size: 25rpx;
     display: flex;
     flex-direction: row;
-    align-content: center;
-    justify-content: space-between;
-    margin-top: 20rpx;
-    position: relative;
-    margin-left: 70rpx;
 
-    .div3-1 {
+    .div3-2-flex {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 150rpx;
-      height: 45rpx;
-      border-radius: 10rpx;
-      background-color: rgb(243, 243, 243);
-      color: #999999;
-      font-size: 23rpx;
-    }
-
-    .div3-2 {
-      margin-left: auto;
-      position: relative;
-      left: -10rpx;
-      color: #999999;
-      font-size: 25rpx;
-      display: flex;
-      flex-direction: row;
-
-      .div3-2-flex {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+      margin-left: 10rpx;
     }
   }
+}
 
-  .div1 {
+
+.div1 {
+  display: flex;
+  flex-direction: row;
+
+  .div1-txt1 {
+    font-size: 30rpx;
+    max-width: 520rpx;
+    overflow: hidden; /* 隐藏超出部分 */
+    white-space: nowrap; /* 不换行 */
+    text-overflow: ellipsis; /* 溢出时显示省略号 */
+  }
+
+  .div1-txt1-auth {
+    margin-left: 10rpx;
+    width: 40rpx;
+    height: 40rpx;
+    border-radius: 50%;
+  }
+
+  .div1-wd-img {
+    width: 70rpx;
+    height: 70rpx;
+    border-radius: 50%;
+  }
+
+  .div1-txt2 {
+    color: #999999;
+    font-size: 24rpx;
+  }
+
+  .div1-txt3 {
+    margin-left: 30rpx;
+    font-size: 24rpx;
+    color: #999999;
+  }
+
+  .div1-1 {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    margin-left: 20rpx;
 
-    .div1-txt1 {
-      font-size: 30rpx;
-      max-width: 520rpx;
-      overflow: hidden; /* 隐藏超出部分 */
-      white-space: nowrap; /* 不换行 */
-      text-overflow: ellipsis; /* 溢出时显示省略号 */
-    }
-
-    .div1-wd-img {
-      width: 70rpx;
-      height: 70rpx;
-      border-radius: 50%;
-    }
-
-    .div1-txt2 {
-      color: #999999;
-      font-size: 24rpx;
-    }
-
-    .div1-txt3 {
-      margin-left: 30rpx;
-      font-size: 24rpx;
-      color: #999999;
-    }
-
-    .div1-1 {
+    .div1-1-1 {
+      margin-top: 5rpx;
       display: flex;
-      flex-direction: column;
-      margin-left: 20rpx;
-
-      .div1-1-1 {
-        margin-top: 5rpx;
-        display: flex;
-        flex-direction: row;
-      }
+      flex-direction: row;
+      align-items: center;
     }
   }
 }

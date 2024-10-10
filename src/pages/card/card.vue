@@ -1,43 +1,90 @@
 <script setup>
-import {ref} from 'vue'
+import {reactive, ref} from 'vue'
 import {useCounterStore} from '@/stores/counter'
 import {useToast} from 'wot-design-uni';
 
 const toast = useToast()
+import {post, postClassification} from '@/api/card.js';
+
 const {safeAreaInsets} = uni.getSystemInfoSync();
 const counter = useCounterStore()
-const fileList = ref([
-  {
-    url: 'https://img12.360buyimg.com//n0/jfs/t1/29118/6/4823/55969/5c35c16bE7c262192/c9fdecec4b419355.jpg'
-  }
-])
+const fileList = ref([])
 
-const action = 'https://mockapi.eolink.com/zhTuw2P8c29bc981a741931bdd86eb04dc1e8fd64865cb5/upload'
 
 function handleChange({fileList: files}) {
   fileList.value = files
 }
 
+
 const card_show_tabs = () => {
   counter.card_tabs_show = !counter.card_tabs_show
 }
+let model = reactive({
+  postContent: '',
+  postPictures: '',
+  postTime: '',
+  postClassificationId: ''
+})
 const submit_card = () => {
-  if (counter.card_comment_inp.length > 0) {
-    counter.index_tab_data.unshift(["164512", "/static/index/test_head.png", "测试帖子", "2小时前", "1",
-      counter.card_comment_inp, true, [], counter.card_tabs_select, "1", "1"])
-    counter.card_comment_inp = ""
-    uni.switchTab({
-      url: '/pages/index/index'
-    });
-    toast.show("发布成功")
+  if (model.postContent.length > 0) {
+    model.postclassificationId = counter.card_tabs_select;
+    if (fileList.value.length > 0) {
+      let postPictures = ref([])
+      for (let i = 0; i < fileList.value.length; i++) {
+        postPictures.value.push(fileList.value[i].response)
+      }
+      model.postPictures = postPictures.value.join("|")
+    }
+    model.postTime = Date.now();
+
+    post(model).then(res => {
+      if (res.code !== 1) {
+        toast.warning(res.msg)
+      } else {
+        model.postContent = ""
+        model.postPictures = ""
+        model.postTime = ""
+        model.postClassificationId = ""
+        fileList.value = []
+        counter.index_tab = "全部"
+        uni.switchTab({
+          url: '/pages/index/index'
+        });
+        toast.show("发布成功")
+      }
+    }).catch(error => {
+      toast.error("服务器异常")
+    })
+
   } else {
     toast.show("帖子内容为空")
   }
 
 }
-const selectCardTab = (data) => {
-  counter.card_tabs_select = data
+const selectCardTab = (postClassificationId) => {
+  counter.card_tabs_select = postClassificationId
+  get_card_show_desc(counter.card_tabs_select)
 }
+const get_card_show_desc = (postClassificationId) => {
+  counter.card_show_desc = counter.card_tabs.filter(data => data.postClassificationId === postClassificationId)[0].postClassificationName
+}
+const get_card_tabs = () => {
+  postClassification()
+      .then(res => {
+        if (res.code !== 1) {
+          toast.warning(res.msg)
+        } else {
+          // 登录成功，更新 store 中的用户信息
+          counter.card_tabs = res.data
+          get_card_show_desc(counter.card_tabs_select)
+        }
+      })
+      .catch(error => {
+        // 处理登录失败的情况
+        toast.error('服务器异常')
+      });
+}
+get_card_tabs()
 </script>
 
 <template>
@@ -47,16 +94,16 @@ const selectCardTab = (data) => {
 
   <view class="div1">
     <wd-textarea
-        v-model="counter.card_comment_inp"
+        v-model="model.postContent"
         :maxlength="800" clearable show-word-limit
         placeholder="输入帖子内容，请保持合法合规"/>
     <view style="margin-left: 20rpx">
-      <wd-upload :file-list="fileList1"
+      <wd-upload :file-list="fileList"
                  image-mode="aspectFill"
-                 :action="action"
+                 :action="counter.action"
                  :limit="9"
                  multiple
-                 @change="handleChange1"></wd-upload>
+                 @change="handleChange"></wd-upload>
     </view>
   </view>
   <view class="div-root">
@@ -66,7 +113,7 @@ const selectCardTab = (data) => {
         <text style="line-height: 22px;margin-left: 5rpx">帖子标签</text>
       </view>
       <view class="div2-2">
-        <text style="line-height: 22px;">{{ counter.card_tabs_select }}</text>
+        <text style="line-height: 22px;">{{ counter.card_show_desc }}</text>
         <wd-icon name="arrow-right" size="18px"></wd-icon>
       </view>
     </view>
@@ -87,13 +134,14 @@ const selectCardTab = (data) => {
         <view v-for="(data, index) in counter.card_tabs" :key="index">
           <view
               class="div4-2-1"
-              @click="selectCardTab(data)"
-              :class="{ selected: counter.card_tabs_select === data }">
+              @click="selectCardTab(data.postClassificationId)"
+              :class="{ selected: counter.card_tabs_select === data.postClassificationId }">
             <view style="margin-left: 20rpx">
               <wd-icon name="books" size="18px"></wd-icon>
             </view>
-            <text style="line-height: 22px;margin-left: 5rpx;font-size: 30rpx">{{ data }}</text>
-            <view style="margin-left: auto;margin-right: 20rpx" v-if="counter.card_tabs_select === data">
+            <text style="line-height: 22px;margin-left: 5rpx;font-size: 30rpx">{{ data.postClassificationName }}</text>
+            <view style="margin-left: auto;margin-right: 20rpx"
+                  v-if="counter.card_tabs_select === data.postClassificationId">
               <wd-icon name="check-circle-filled" size="18px"></wd-icon>
             </view>
           </view>
@@ -105,11 +153,12 @@ const selectCardTab = (data) => {
 </template>
 
 <style scoped lang="scss">
-.div5{
+.div5 {
   font-size: 25rpx;
   color: #999999;
   margin-top: 120rpx;
 }
+
 .div4 {
   display: flex;
   flex-direction: column;
@@ -210,5 +259,9 @@ const selectCardTab = (data) => {
   font-size: 35rpx;
   font-weight: bold;
   height: 85rpx;
+  position: sticky; /* Makes the header sticky */
+  top: 0; /* Positions it at the top of the viewport */
+  z-index: 1000; /* Ensures it stays above other content */
+  background-color: white; /* Optional: Set a background color */
 }
 </style>

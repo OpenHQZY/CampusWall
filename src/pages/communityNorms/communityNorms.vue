@@ -105,7 +105,7 @@
 		<view v-show="value === 2" style="height: 100vh; text-align: center; line-height: 100vh; color: rgb(182, 182, 182);">正在开发当中，敬请期待</view>
 		<!-- 尾部 -->
 		<view class="footer">
-			<view>湖汽校园墙@2024</view>
+			<view>湖汽万能墙@2024</view>
 		</view>
 	</view>
 </template>

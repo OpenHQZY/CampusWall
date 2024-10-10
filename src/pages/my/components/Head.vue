@@ -1,8 +1,12 @@
 <script setup>
 	import { ref } from 'vue';
-	
+	// 从 stores 目录导入 counter store，用于状态管理
+	import { useCounterStore } from '@/stores/counter.js'
+	// 获取 counter store 的实例，用于在组件中访问和修改状态
+	const counterStore = useCounterStore()
+	// 从 uni API 获取系统信息，并解构出 safeAreaInsets，用于处理不同设备的安全区域
 	const { safeAreaInsets } = uni.getSystemInfoSync();
-	// 用于放置帖子、点赞等
+	// 定义一个响应式数组，用于存储用户可以执行的操作，如帖子、点赞等
 	const actionItems = ref(['帖子', '点赞', '评论', '收藏'])
 </script>
 
@@ -10,16 +14,18 @@
 	<!-- 头部 -->
 	<view class="profile" :style="{ paddingTop: safeAreaInsets.top+40 + 'px' }">
 		<!-- 左边部分 -->
-		<view class="info">
-			<!-- 头像 -->
-			<image class="avatar" src="@/static/my/profilePicture.jpg"></image>
-			<view class="name-user-container" @tap="">
-				<view class="name">用户名</view>
-				<text class="user-id">用户ID:20225222123</text>
-			</view>
-		</view>
+		<navigator :url=" counterStore.user ? '/pages/personalSettings/personalSettings' : '/pages/login/login' " hover-class="none">
+			<view class="info">
+				<!-- 头像 -->
+				<image class="avatar" :src='counterStore.user ? counterStore.user.userProfilePicture : "/static/my/defaultAvatar.webp"'></image>
+				<view class="name-user-container">
+					<view class="name">{{ counterStore.user ? counterStore.user.userName : '点击登入' }}</view>
+					<text class="user-id">{{ counterStore.user ? `用户ID:${counterStore.user.userId}` : '用户ID: 无' }}</text>
+				</view>
+			</view> 
+		</navigator>
 		<!-- 右边部分 -->
-		<view class="edit-btn-container">
+		<view class="edit-btn-container" v-if="counterStore.user">
 			<navigator url="/pages/personalSettings/personalSettings" hover-class="none">
 				<view class="edit-btn">编辑资料</view>
 				<wd-icon name="arrow-right" color="rgb(148, 148, 148)" size="18px"></wd-icon>
@@ -45,6 +51,7 @@
 		// 左边部分
 		.info {
 			display: flex;
+			padding-left: 15rpx;
 			// 头像
 			.avatar {
 				width: 110rpx;

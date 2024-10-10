@@ -84,15 +84,15 @@
 			</view>
 
 			<!-- 第二部分：完善信息 -->
-			<div v-show="active === 1" class="step-two">
+			<view v-show="active === 1" class="step-two">
 				<wd-form ref="form" :model="model" errorType="message">
 					<wd-cell-group border>
-						<wd-input label="学号" label-width="100px" prop="studentID" clearable v-model="model.studentID"
+						<wd-input label="学号" label-width="50px" prop="studentID" clearable v-model="model.studentID"
 							placeholder="请输入学号"
-							:rules="[{ required: true, pattern: /^\d{12}$/, message: '请输入12位的学号' }]" />
-						<wd-input label="身份证" label-width="100px" prop="identityCard" show-password clearable
+							:rules="[{ required: false, pattern: /^\d{12}$/, message: '请输入12位的学号' }]" />
+						<wd-input label="身份证" label-width="50px" prop="identityCard" show-password clearable
 							v-model="model.identityCard" placeholder="请输入身份证后6位"
-							:rules="[{ required: true, pattern: /^[A-Za-z0-9]{6}$/, message: '请填写身份证后6位' }]" />
+							:rules="[{ required: false, pattern: /^[A-Za-z0-9]{6}$/, message: '请填写身份证后6位' }]" />
 					</wd-cell-group>
 					<view class="footer">
 						<!-- 轻提示挂载点 -->
@@ -101,10 +101,10 @@
 						<wd-button type="primary" size="large" @click="handleSubmit">提交认证</wd-button>
 					</view>
 				</wd-form>
-			</div>
+			</view>
 
 			<!-- 第三部分：认证完成 -->
-			<div v-show="active === 2" class="step-three">
+			<view v-show="active === 2" class="step-three">
 				<!-- 认证完成按钮 -->
 				<view class="certification-success">
 					<view class="certification-message">
@@ -115,7 +115,7 @@
 						<wd-button size="large" @click="goBack">返回个人主页</wd-button>
 					</view>
 				</view>
-			</div>
+			</view>
 
 		</view>
 	</view>

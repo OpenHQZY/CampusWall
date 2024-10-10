@@ -1,10 +1,13 @@
 <script setup>
 import {ref} from 'vue'
 import {useCounterStore} from '@/stores/counter'
+import {notice} from '@/api/notice.js';
 
 const {safeAreaInsets} = uni.getSystemInfoSync();
 const counter = useCounterStore()
+import {useToast} from 'wot-design-uni';
 
+const toast = useToast()
 function handleClickLeft() {
   uni.navigateBack()
 }
@@ -20,23 +23,40 @@ function copyText(text) {
     }
   });
 }
+
+const get_data = () => {
+  notice()
+      .then(res => {
+        if (res.code !== 1) {
+          toast.warning(res.msg)
+        } else {
+          counter.index_notice_text = []
+          counter.index_notice_text = res.data
+        }
+      })
+      .catch(error => {
+        // 处理登录失败的情况
+        toast.error('服务器异常')
+      });
+}
+get_data()
 </script>
 
 <template>
   <view :style="{ paddingTop: safeAreaInsets.top+0 + 'px' }" class="div-root">
     <wd-navbar title="公告" left-text="返回" left-arrow @click-left="handleClickLeft"></wd-navbar>
-    <view class="div1-flex" v-for="(item, index) in counter.index_notice_text" :key="item[0]">
-      <view class="div1" @longpress="() => copyText(item[1])">
+    <view class="div1-flex" v-for="(item) in counter.index_notice_text" :key="item.noticeId">
+      <view class="div1" @longpress="() => copyText(item.noticeContent)">
         <view class="div1-left">
-          <text class="div1-left-txt">{{ item[0] }}</text>
+          <text class="div1-left-txt">{{ item.noticeId }}</text>
         </view>
         <view class="div1-right">
           <wd-text
-              :text="item[1]"
+              :text="item.noticeContent"
               color="black"
               class="div1-right-txt"
           ></wd-text>
-          <text class="div1-right-time">{{ item[2] }}</text>
+          <text class="div1-right-time">{{ item.noticeTime }}</text>
         </view>
       </view>
     </view>

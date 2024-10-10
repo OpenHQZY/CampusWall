@@ -104,5 +104,9 @@ const counter = useCounterStore()
   font-size: 35rpx;
   font-weight: bold;
   height: 85rpx;
+  position: sticky; /* Makes the header sticky */
+  top: 0; /* Positions it at the top of the viewport */
+  z-index: 1000; /* Ensures it stays above other content */
+  background-color: white; /* Optional: Set a background color */
 }
 </style>

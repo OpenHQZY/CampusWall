@@ -13,7 +13,7 @@
 		<!-- 内容 -->
 		<Content></Content>
 		<!-- 尾部 -->
-		<view class="footer">湖汽校园墙@2024</view>
+		<view class="footer">湖汽万能墙@2024</view>
 	</view>
 	<!-- </scroll-view> -->
 </template>

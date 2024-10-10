@@ -3,6 +3,12 @@ import {ref} from 'vue';
 
 
 const {safeAreaInsets} = uni.getSystemInfoSync();
+
+const search_card = () => {
+  uni.switchTab({
+    url: '/pages/find/find'
+  });
+}
 </script>
 
 <template>
@@ -11,11 +17,13 @@ const {safeAreaInsets} = uni.getSystemInfoSync();
       <image src="@/static/index/head.png" class="div1-img"></image>
       <text class="div1-txt">湖汽万能墙</text>
     </view>
-    <view class="div2">
-      <view class="div2-ico">
-        <wd-icon name="search" color="#a0a0a0" size="2vh"/>
+    <view class="div2" @click="search_card">
+      <view class="div2-2">
+        <view class="div2-ico">
+          <wd-icon name="search" color="#a0a0a0" size="2vh"/>
+        </view>
+        <text class="div2-txt">搜索帖子</text>
       </view>
-      <text class="div2-txt">搜索帖子</text>
     </view>
   </view>
 </template>
@@ -47,10 +55,19 @@ const {safeAreaInsets} = uni.getSystemInfoSync();
   flex-direction: row;
   align-items: center;
   margin-left: 25rpx;
-  height: 50rpx;
+  justify-content: center;
+  height: 70rpx;
   width: 200rpx;
-  border-radius: 30rpx;
-  background-color: rgb(238, 238, 238);
+
+  .div2-2 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 50rpx;
+    width: 200rpx;
+    border-radius: 30rpx;
+    background-color: rgb(238, 238, 238);
+  }
 
   .div2-ico {
     display: flex;
